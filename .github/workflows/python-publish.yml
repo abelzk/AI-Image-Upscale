@@ -24,7 +24,7 @@ jobs:
     
     - name: Run upscaler
       env: 
-          ZIP_PASSWORD: ${{ secrets.ZIP_PASSWORD }}
+          RAR_PASSWORD: ${{ secrets.RAR_PASSWORD }}
       run: python upscaler.py
     
     - name: Upload artifact
