@@ -16,8 +16,26 @@ def download_model(model_path):
     urllib.request.urlretrieve(url, model_path)
     print("Download completed.")
 
+def load_model(model_path, scale_factor):
+    if not os.path.exists(model_path):
+        download_model(model_path)
+
+    try:
+        model = RealESRGANer(
+            scale=scale_factor,
+            model_path=model_path,
+            tile=256,
+            tile_pad=10,
+            pre_pad=0,
+            half=False
+        )
+        return model
+    except Exception as e:
+        print(f"Failed to load the model: {e}")
+        raise
+
 def extract_rar(input_rar, extract_path, password=None):
-    rarfile.UNRAR_TOOL = "unrar"  # Ensure the `unrar` tool is installed on the system
+    rarfile.UNRAR_TOOL = "unrar"
     with rarfile.RarFile(input_rar) as rar_ref:
         if password:
             rar_ref.extractall(path=extract_path, pwd=password)
@@ -38,8 +56,7 @@ def compress_folder_to_rar(folder_path, output_rar, password=None):
 
 def upscale_image(image_path, output_path, scale_factor=4):
     model_path = 'RealESRGAN_x4plus.pth'
-    if not os.path.exists(model_path):
-        download_model(model_path)
+    model = load_model(model_path, scale_factor)
 
     try:
         print(f"Starting to process: {image_path}")
@@ -53,16 +70,7 @@ def upscale_image(image_path, output_path, scale_factor=4):
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-        model = RealESRGANer(
-            scale=scale_factor,
-            model_path=model_path,
-            tile=256,
-            tile_pad=10,
-            pre_pad=0,
-            half=False  # Use `True` if your system supports half-precision (FP16)
-        )
         output, _ = model.enhance(img)
-        
         output.save(output_path)
         print(f"Successfully saved upscaled image to: {output_path}")
 
@@ -81,7 +89,6 @@ def process_images(input_folder, output_folder):
                 output_path = os.path.join(output_folder, relative_path)
                 
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                
                 upscale_image(input_path, output_path)
 
     input_count = sum(1 for root, _, files in os.walk(input_folder) 
