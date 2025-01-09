@@ -34,4 +34,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: upscaled-images
-        path: upscaled_images.zip
+        path: upscaled_images.rar
