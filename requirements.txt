@@ -5,5 +5,4 @@ realesrgan==0.3.0
 super-image>=0.1.2
 huggingface-hub==0.4.0
 rarfile==4.0
-numpy>=1.21,<=2.0.0
-pybind11>=2.12
+numpy<2.0.0
