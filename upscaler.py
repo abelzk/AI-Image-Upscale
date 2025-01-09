@@ -11,23 +11,10 @@ def create_directory(directory):
         os.makedirs(directory)
 
 def download_model(model_path):
-    url = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.4.0/RealESRGAN_x4plus.pth"
+    url = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
     print(f"Downloading model from {url}...")
     urllib.request.urlretrieve(url, model_path)
     print("Download completed.")
-
-model_path = 'RealESRGAN_x4plus.pth'
-if not os.path.exists(model_path):
-    download_model(model_path)
-
-model = RealESRGANer(
-    scale=scale_factor,
-    model_path=model_path,
-    tile=256,
-    tile_pad=10,
-    pre_pad=0,
-    half=False
-)
 
 def extract_rar(input_rar, extract_path, password=None):
     rarfile.UNRAR_TOOL = "unrar"
@@ -51,7 +38,8 @@ def compress_folder_to_rar(folder_path, output_rar, password=None):
 
 def upscale_image(image_path, output_path, scale_factor=4):
     model_path = 'RealESRGAN_x4plus.pth'
-    model = load_model(model_path, scale_factor)
+    if not os.path.exists(model_path):
+        download_model(model_path)
 
     try:
         print(f"Starting to process: {image_path}")
@@ -65,7 +53,16 @@ def upscale_image(image_path, output_path, scale_factor=4):
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
+        model = RealESRGANer(
+            scale=scale_factor,
+            model_path=model_path,
+            tile=256,
+            tile_pad=10,
+            pre_pad=0,
+            half=False  # Use `True` if your system supports half-precision (FP16)
+        )
         output, _ = model.enhance(img)
+        
         output.save(output_path)
         print(f"Successfully saved upscaled image to: {output_path}")
 
