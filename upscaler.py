@@ -9,17 +9,22 @@ def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def extract_zip(input_zip, extract_path):
+def extract_zip(input_zip, extract_path, password=None):
     with zipfile.ZipFile(input_zip, 'r') as zip_ref:
+        if password:
+            zip_ref.setpassword(password.encode())
         zip_ref.extractall(extract_path)
 
-def compress_folder(folder_path, output_zip):
+def compress_folder(folder_path, output_zip, password=None):
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(folder_path):
             for file in files:
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, folder_path)
-                zipf.write(file_path, arcname)
+                if password:
+                    zipf.write(file_path, arcname, pwd=password.encode())
+                else:
+                    zipf.write(file_path, arcname)
 
 def upscale_image(image_path, output_path, scale_factor=4):
     try:
@@ -92,7 +97,7 @@ def process_images(input_folder, output_folder):
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 
                 upscale_image(input_path, output_path)
-                # Add this at the end of the function
+
     input_count = sum(1 for root, _, files in os.walk(input_folder) 
                      for f in files if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')))
     output_count = sum(1 for root, _, files in os.walk(output_folder) 
@@ -107,6 +112,12 @@ def main():
     temp_dir = os.path.join(work_dir, 'temp')
     output_dir = os.path.join(work_dir, 'output')
     output_zip = os.path.join(work_dir, 'upscaled_images.zip')
+    
+    # Get the password from environment variables
+    password = os.getenv('ZIP_PASSWORD')
+    if not password:
+        print("Error: ZIP_PASSWORD environment variable is not set.")
+        sys.exit(1)
 
     # Create necessary directories
     create_directory(temp_dir)
@@ -115,7 +126,7 @@ def main():
     try:
         # Extract input zip
         print("Extracting input zip file...")
-        extract_zip(input_zip, temp_dir)
+        extract_zip(input_zip, temp_dir, password=password)
 
         # Process images
         print("Processing images...")
@@ -123,7 +134,7 @@ def main():
 
         # Create output zip
         print("Creating output zip file...")
-        compress_folder(output_dir, output_zip)
+        compress_folder(output_dir, output_zip, password=password)
 
         print("Process completed successfully!")
 
