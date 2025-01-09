@@ -1,4 +1,4 @@
 Pillow>=9.0.0
 torch>=1.9.0
 super-image>=0.1.2
-huggingface-hub==0.16.4
+huggingface-hub==0.4.0
