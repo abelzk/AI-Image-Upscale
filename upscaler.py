@@ -23,17 +23,11 @@ def compress_folder(folder_path, output_zip):
 
 def upscale_image(image_path, output_path, scale_factor=4):
     try:
-        # Load model
+        # Load model with weights_only=True
         model = EdsrModel.from_pretrained('eugenesiow/edsr-base', scale=scale_factor, weights_only=True)
         
-        # Open image with PIL first
-        with Image.open(image_path) as img:
-            # Convert to RGB if needed
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-            # Then use ImageLoader
-            inputs = ImageLoader.load_image(img)
-            
+        # Rest of the function remains the same
+        inputs = ImageLoader.load_image(image_path)
         preds = model(inputs)
         ImageLoader.save_image(preds, output_path)
         print(f"Successfully upscaled: {image_path}")
