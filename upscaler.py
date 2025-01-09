@@ -23,16 +23,62 @@ def compress_folder(folder_path, output_zip):
 
 def upscale_image(image_path, output_path, scale_factor=4):
     try:
-        # Load model with weights_only=True
-        model = EdsrModel.from_pretrained('eugenesiow/edsr-base', scale=scale_factor, weights_only=True)
+        print(f"Starting to process: {image_path}")
         
-        # Rest of the function remains the same
-        inputs = ImageLoader.load_image(image_path)
-        preds = model(inputs)
-        ImageLoader.save_image(preds, output_path)
-        print(f"Successfully upscaled: {image_path}")
+        # Verify input file exists
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Input file not found: {image_path}")
+            
+        # Load and verify input image
+        try:
+            with Image.open(image_path) as img:
+                # Print image details for debugging
+                print(f"Original image size: {img.size}, mode: {img.mode}")
+                # Convert to RGB if needed
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                    print("Converted image to RGB mode")
+        except Exception as img_error:
+            raise Exception(f"Failed to open/process input image: {str(img_error)}")
+
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        # Load model with error handling
+        try:
+            model = EdsrModel.from_pretrained('eugenesiow/edsr-base', 
+                                            scale=scale_factor, 
+                                            weights_only=True)
+            print("Successfully loaded EDSR model")
+        except Exception as model_error:
+            raise Exception(f"Failed to load EDSR model: {str(model_error)}")
+
+        # Process image with detailed error handling
+        try:
+            inputs = ImageLoader.load_image(img)
+            print("Successfully loaded image into model format")
+            
+            preds = model(inputs)
+            print("Successfully generated upscaled prediction")
+            
+            ImageLoader.save_image(preds, output_path)
+            print(f"Successfully saved upscaled image to: {output_path}")
+            
+            # Verify output file exists and has size > 0
+            if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+                raise Exception("Output file is missing or empty")
+                
+        except Exception as process_error:
+            raise Exception(f"Failed during image processing: {str(process_error)}")
+
     except Exception as e:
-        print(f"Error processing {image_path}: {str(e)}")
+        print(f"ERROR processing {image_path}:")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print("Stack trace:")
+        import traceback
+        traceback.print_exc()
+        raise  # Re-raise the exception for the calling function
 
 def process_images(input_folder, output_folder):
     supported_formats = {'.jpg', '.jpeg', '.png', '.bmp'}
