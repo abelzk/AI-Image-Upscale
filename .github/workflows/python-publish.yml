@@ -3,7 +3,7 @@ name: AI Image Upscaler
 on:
   push:
     paths:
-      - 'input.zip'
+      - 'input.rar'
 
 jobs:
   upscale:
