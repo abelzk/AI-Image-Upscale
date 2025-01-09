@@ -33,7 +33,10 @@ def upscale_image(image_path, output_path, scale_factor=4):
         image = Image.open(image_path)
         
         # Load model
-        model = EdsrModel.from_pretrained('edsr', scale=scale_factor)
+        try:
+            model = EdsrModel.from_pretrained('edsr', scale=scale_factor)
+        except Exception as e:
+            raise RuntimeError(f"Error loading model: {e}")
         
         # Upscale image
         upscaled_image = model(image)
@@ -70,6 +73,10 @@ def process_zip(input_zip, output_zip, temp_dir='temp', scale_factor=4):
     os.rmdir(temp_dir)
 
 if __name__ == "__main__":
-    input_zip = 'input.zip'
-    output_zip = 'output.zip'
+    if len(sys.argv) != 3:
+        print("Usage: python upscaler.py <input_zip> <output_zip>")
+        sys.exit(1)
+    
+    input_zip = sys.argv[1]
+    output_zip = sys.argv[2]
     process_zip(input_zip, output_zip)
