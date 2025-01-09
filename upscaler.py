@@ -1,6 +1,6 @@
 import os
 import rarfile
-import pyrar
+import subprocess
 from PIL import Image
 import torch
 from super_image import EdsrModel, ImageLoader
@@ -21,11 +21,15 @@ def extract_rar(input_rar, extract_path, password=None):
 def compress_folder_to_rar(folder_path, output_rar, password=None):
     if not os.path.exists(folder_path):
         raise FileNotFoundError(f"The folder {folder_path} does not exist.")
-    file_list = []
+    
+    # Use subprocess to call the `rar` command for creating a password-protected RAR archive
+    command = ["rar", "a", "-p" + password, output_rar]
     for root, _, files in os.walk(folder_path):
         for file in files:
-            file_list.append(os.path.join(root, file))
-    pyrar.create(output_rar, file_list, password=password)
+            file_path = os.path.join(root, file)
+            command.append(file_path)
+    
+    subprocess.run(command, check=True)
 
 def upscale_image(image_path, output_path, scale_factor=4):
     try:
