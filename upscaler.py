@@ -23,36 +23,18 @@ def compress_folder(folder_path, output_zip):
 
 def upscale_image(image_path, output_path, scale_factor=4):
     try:
-        print(f"Starting to process: {image_path}")
+        # Load model
+        model = EdsrModel.from_pretrained('eugenesiow/edsr-base', scale=scale_factor)
         
-        # Load model with weights_only=True
-        model = EdsrModel.from_pretrained('eugenesiow/edsr-base', 
-                                        scale=scale_factor, 
-                                        weights_only=True)
-        
-        # First load the image with PIL
-        with Image.open(image_path) as img:
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-            # Convert PIL Image to tensor format
-            inputs = ImageLoader.load_image(img)  # Pass PIL Image object, not string
-        
+        # Prepare image
+        inputs = ImageLoader.load_image(image_path)
         preds = model(inputs)
+        
+        # Save upscaled image
         ImageLoader.save_image(preds, output_path)
         print(f"Successfully upscaled: {image_path}")
-        
     except Exception as e:
         print(f"Error processing {image_path}: {str(e)}")
-        raise
-
-    except Exception as e:
-        print(f"ERROR processing {image_path}:")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print("Stack trace:")
-        import traceback
-        traceback.print_exc()
-        raise  # Re-raise the exception for the calling function
 
 def process_images(input_folder, output_folder):
     supported_formats = {'.jpg', '.jpeg', '.png', '.bmp'}
