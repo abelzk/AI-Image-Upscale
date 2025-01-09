@@ -50,6 +50,13 @@ def process_images(input_folder, output_folder):
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 
                 upscale_image(input_path, output_path)
+                # Add this at the end of the function
+    input_count = sum(1 for root, _, files in os.walk(input_folder) 
+                     for f in files if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')))
+    output_count = sum(1 for root, _, files in os.walk(output_folder) 
+                      for f in files if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')))
+    print(f"Input images found: {input_count}")
+    print(f"Output images processed: {output_count}")
 
 def main():
     # Setup directories
