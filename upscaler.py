@@ -4,6 +4,7 @@ from PIL import Image
 import torch
 from super_image import EdsrModel, ImageLoader
 import sys
+import random
 
 def create_directory(directory):
     if not os.path.exists(directory):
@@ -92,7 +93,7 @@ def process_images(input_folder, output_folder):
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 
                 upscale_image(input_path, output_path)
-                # Add this at the end of the function
+
     input_count = sum(1 for root, _, files in os.walk(input_folder) 
                      for f in files if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')))
     output_count = sum(1 for root, _, files in os.walk(output_folder) 
@@ -106,7 +107,10 @@ def main():
     input_zip = os.path.join(work_dir, 'input.zip')
     temp_dir = os.path.join(work_dir, 'temp')
     output_dir = os.path.join(work_dir, 'output')
-    output_zip = os.path.join(work_dir, 'upscaled_images.zip')
+
+    # Generate random 5-digit number for the zip file
+    random_number = random.randint(10000, 99999)
+    output_zip = os.path.join(work_dir, f'upscaled_images_{random_number}.zip')
 
     # Create necessary directories
     create_directory(temp_dir)
@@ -125,7 +129,7 @@ def main():
         print("Creating output zip file...")
         compress_folder(output_dir, output_zip)
 
-        print("Process completed successfully!")
+        print(f"Process completed successfully! Output zip: {output_zip}")
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
