@@ -1,4 +1,5 @@
 import os
+import urllib.request
 import rarfile
 import subprocess
 from PIL import Image
@@ -9,6 +10,25 @@ from realesrgan import RealESRGANer
 def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+def download_model(model_path):
+    url = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+    print(f"Downloading model from {url}...")
+    urllib.request.urlretrieve(url, model_path)
+    print("Download completed.")
+
+model_path = 'RealESRGAN_x4plus.pth'
+if not os.path.exists(model_path):
+    download_model(model_path)
+
+model = RealESRGANer(
+    scale=scale_factor,
+    model_path=model_path,
+    tile=256,
+    tile_pad=10,
+    pre_pad=0,
+    half=False
+)
 
 def extract_rar(input_rar, extract_path, password=None):
     rarfile.UNRAR_TOOL = "unrar"  # Ensure the `unrar` tool is installed on the system
