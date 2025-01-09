@@ -1,5 +1,7 @@
 Pillow>=9.0.0
 torch>=1.9.0
+torchvision==0.15.2
+realesrgan==0.3.0
 super-image>=0.1.2
 huggingface-hub==0.4.0
 rarfile==4.0
