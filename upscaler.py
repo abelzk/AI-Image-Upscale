@@ -11,28 +11,23 @@ def create_directory(directory):
         os.makedirs(directory)
 
 def download_model(model_path):
-    url = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+    url = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.4.0/RealESRGAN_x4plus.pth"
     print(f"Downloading model from {url}...")
     urllib.request.urlretrieve(url, model_path)
     print("Download completed.")
 
-def load_model(model_path, scale_factor):
-    if not os.path.exists(model_path):
-        download_model(model_path)
+model_path = 'RealESRGAN_x4plus.pth'
+if not os.path.exists(model_path):
+    download_model(model_path)
 
-    try:
-        model = RealESRGANer(
-            scale=scale_factor,
-            model_path=model_path,
-            tile=256,
-            tile_pad=10,
-            pre_pad=0,
-            half=False
-        )
-        return model
-    except Exception as e:
-        print(f"Failed to load the model: {e}")
-        raise
+model = RealESRGANer(
+    scale=scale_factor,
+    model_path=model_path,
+    tile=256,
+    tile_pad=10,
+    pre_pad=0,
+    half=False
+)
 
 def extract_rar(input_rar, extract_path, password=None):
     rarfile.UNRAR_TOOL = "unrar"
