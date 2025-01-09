@@ -1,5 +1,6 @@
 import os
-import zipfile
+import rarfile
+import pyrar
 from PIL import Image
 import torch
 from super_image import EdsrModel, ImageLoader
@@ -9,22 +10,22 @@ def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def extract_zip(input_zip, extract_path, password=None):
-    with zipfile.ZipFile(input_zip, 'r') as zip_ref:
+def extract_rar(input_rar, extract_path, password=None):
+    rarfile.UNRAR_TOOL = "unrar"  # Ensure the `unrar` tool is installed on the system
+    with rarfile.RarFile(input_rar) as rar_ref:
         if password:
-            zip_ref.setpassword(password.encode())
-        zip_ref.extractall(extract_path)
+            rar_ref.extractall(path=extract_path, pwd=password)
+        else:
+            rar_ref.extractall(path=extract_path)
 
-def compress_folder(folder_path, output_zip, password=None):
-    with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(folder_path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, folder_path)
-                if password:
-                    zipf.write(file_path, arcname, pwd=password.encode())
-                else:
-                    zipf.write(file_path, arcname)
+def compress_folder_to_rar(folder_path, output_rar, password=None):
+    if not os.path.exists(folder_path):
+        raise FileNotFoundError(f"The folder {folder_path} does not exist.")
+    file_list = []
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_list.append(os.path.join(root, file))
+    pyrar.create(output_rar, file_list, password=password)
 
 def upscale_image(image_path, output_path, scale_factor=4):
     try:
@@ -108,15 +109,15 @@ def process_images(input_folder, output_folder):
 def main():
     # Setup directories
     work_dir = os.getcwd()
-    input_zip = os.path.join(work_dir, 'input.zip')
+    input_rar = os.path.join(work_dir, 'input.rar')
     temp_dir = os.path.join(work_dir, 'temp')
     output_dir = os.path.join(work_dir, 'output')
-    output_zip = os.path.join(work_dir, 'upscaled_images.zip')
+    output_rar = os.path.join(work_dir, 'upscaled_images.rar')
     
     # Get the password from environment variables
-    password = os.getenv('ZIP_PASSWORD')
+    password = os.getenv('RAR_PASSWORD')
     if not password:
-        print("Error: ZIP_PASSWORD environment variable is not set.")
+        print("Error: RAR_PASSWORD environment variable is not set.")
         sys.exit(1)
 
     # Create necessary directories
@@ -124,17 +125,17 @@ def main():
     create_directory(output_dir)
 
     try:
-        # Extract input zip
-        print("Extracting input zip file...")
-        extract_zip(input_zip, temp_dir, password=password)
+        # Extract input rar
+        print("Extracting input RAR file...")
+        extract_rar(input_rar, temp_dir, password=password)
 
         # Process images
         print("Processing images...")
         process_images(temp_dir, output_dir)
 
-        # Create output zip
-        print("Creating output zip file...")
-        compress_folder(output_dir, output_zip, password=password)
+        # Create output rar
+        print("Creating output RAR file...")
+        compress_folder_to_rar(output_dir, output_rar, password=password)
 
         print("Process completed successfully!")
 
