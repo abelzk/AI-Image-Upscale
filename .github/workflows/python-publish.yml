@@ -23,6 +23,8 @@ jobs:
         pip install -r requirements.txt
     
     - name: Run upscaler
+      env: 
+          ZIP_PASSWORD: ${{ secrets.ZIP_PASSWORD }}
       run: python upscaler.py
     
     - name: Upload artifact
